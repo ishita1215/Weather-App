@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Simple Weather App</title>
+  <style>
+    body { font-family: Arial, sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; background:#f3f7fb; }
+    .card { background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08); width:320px; text-align:center; }
+    input { padding:8px; width:85%; margin-bottom:10px; }
+    button { padding:8px 12px; cursor:pointer; border:none; border-radius:6px; background:#007acc; color:white; }
+    p { margin-top:12px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Weather App</h2>
+    <input id="city" placeholder="Type a city (e.g., Delhi, Amritsar)">
+    <br>
+    <button onclick="getWeather()">Get Weather</button>
+    <p id="output"></p>
+    <small>Supported cities: Delhi, Amritsar, Mumbai, Bengaluru (no API key needed)</small>
+  </div>
+
+  <script>
+    // Simple city -> lat/lon map for demo using Open-Meteo (no API key)
+    const cityMap = {
+      "delhi": {lat:28.7041, lon:77.1025},
+      "amritsar": {lat:31.6340, lon:74.8723},
+      "mumbai": {lat:19.0760, lon:72.8777},
+      "bengaluru": {lat:12.9716, lon:77.5946}
+    };
+
+    async function getWeather(){
+      const cityInput = document.getElementById("city").value.trim().toLowerCase();
+      const output = document.getElementById("output");
+
+      if(!cityInput || !cityMap[cityInput]){
+        output.innerText = "Please enter a supported city (Delhi, Amritsar, Mumbai, Bengaluru).";
+        return;
+      }
+
+      const {lat, lon} = cityMap[cityInput];
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`;
+      output.innerText = "Loading...";
+
+      try{
+        const res = await fetch(url);
+        const data = await res.json();
+        const t = data.current_weather.temperature;
+        const w = data.current_weather.windspeed;
+        output.innerText = `Current temperature in ${cityInput.charAt(0).toUpperCase()+cityInput.slice(1)}: ${t}°C, Wind: ${w} km/h`;
+      }catch(e){
+        output.innerText = "Could not fetch weather. Check internet connection.";
+      }
+    }
+  </script>
+</body>
+</html>
